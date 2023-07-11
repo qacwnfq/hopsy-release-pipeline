@@ -1,0 +1,3 @@
+[submodule "hopsy"]
+	path = hopsy
+	url = https://jugit.fz-juelich.de/IBG-1/ModSim/hopsy

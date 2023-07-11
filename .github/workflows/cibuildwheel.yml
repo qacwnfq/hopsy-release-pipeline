@@ -39,9 +39,11 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+        working-directory: ./hopsy
 
       - uses: actions/setup-python@v4
         name: Install Python
+        working-directory: ./hopsy
         with:
           python-version: 3.9
 
@@ -54,21 +56,25 @@ jobs:
       ##https://github.com/qhull/qhull/raw/2020.2/COPYING.txt
 
       - name: Install dependencies
+        working-directory: ./hopsy
         run: python -m pip install build twine
 
       - name: Build sdist
         id: sdist
+        working-directory: ./hopsy
         run: |
           python -m build --sdist
           python ci/export_sdist_name.py
 
       - name: Check README rendering for PyPI
+        working-directory: ./hopsy
         run: twine check dist/*
 
         #- name: Upload sdist result
         #uses: actions/upload-artifact@v3
         #with:
         #  name: sdist
+        #  working-directory: ./hopsy
         #  path: dist/*.tar.gz
         #  if-no-files-found: error
 
@@ -85,6 +91,7 @@ jobs:
       )
     needs: build_sdist
     name: Build wheels on ${{ matrix.os }}
+    working-directory: ./hopsy
     runs-on: ${{ matrix.os }}
     env:
       CIBW_BEFORE_BUILD: >-
@@ -121,18 +128,21 @@ jobs:
 
     steps:
       - name: Set up QEMU
+        working-directory: ./hopsy
         if: matrix.cibw_archs == 'aarch64'
         uses: docker/setup-qemu-action@v2
         with:
           platforms: arm64
 
       - name: Download sdist
+        working-directory: ./hopsy
         uses: actions/download-artifact@v3
         with:
           name: sdist
           path: dist/
 
       - name: Build wheels for CPython 3.11
+        working-directory: ./hopsy
         uses: pypa/cibuildwheel@0ecddd92b62987d7a2ae8911f4bb8ec9e2e4496a # v2.13.1
         with:
           package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}
@@ -141,6 +151,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
 
       - name: Build wheels for CPython 3.10
+        working-directory: ./hopsy
         uses: pypa/cibuildwheel@0ecddd92b62987d7a2ae8911f4bb8ec9e2e4496a # v2.13.1
         with:
           package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}
@@ -149,6 +160,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
 
       - name: Build wheels for CPython 3.9
+        working-directory: ./hopsy
         uses: pypa/cibuildwheel@0ecddd92b62987d7a2ae8911f4bb8ec9e2e4496a # v2.13.1
         with:
           package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}
@@ -157,6 +169,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
 
       - name: Build wheels for PyPy
+        working-directory: ./hopsy
         uses: pypa/cibuildwheel@0ecddd92b62987d7a2ae8911f4bb8ec9e2e4496a # v2.13.1
         with:
           package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}
@@ -168,6 +181,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: wheels
+          working-directory: ./hopsy
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
